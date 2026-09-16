@@ -38,6 +38,8 @@ jobs:
         run: npm test
       - name: Website validation
         run: npm run validate:site
+      - name: MCP node and gateway runtime verification
+        run: npm run verify:mcp-gateway
 
   pages-smoke:
     name: Static Pages Smoke Test
