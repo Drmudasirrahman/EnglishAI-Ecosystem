@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { existsSync } from 'node:fs';
 import { capabilityConfig } from '../../mcp-gateway/src/index.js';
 
 const expectedTools = {
@@ -31,6 +32,12 @@ describe('MCP gateway capability registry', () => {
   it('uses source scripts under the MCP server tree', () => {
     for (const config of Object.values(capabilityConfig)) {
       expect(config.script).toMatch(/^mcp-servers\/[^/]+\/src\/index\.ts$/);
+    }
+  });
+
+  it('points every capability to an existing MCP server entry point', () => {
+    for (const config of Object.values(capabilityConfig)) {
+      expect(existsSync(config.script)).toBe(true);
     }
   });
 });
