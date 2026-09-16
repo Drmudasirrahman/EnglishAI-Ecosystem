@@ -11,11 +11,11 @@ const ALLOWED_ORIGIN = process.env.WEB_ORIGIN ?? 'https://englishai-ecosystem-li
 const capabilityConfig = {
   'english-content': { script: 'mcp-servers/english-content/src/index.ts', tools: ['search_content', 'fetch_source'] },
   grammar: { script: 'mcp-servers/grammar/src/index.ts', tools: ['explain_grammar', 'analyze_grammar', 'generate_practice'] },
-  vocabulary: { script: 'mcp-servers/vocabulary/src/index.ts', tools: ['lookup_word', 'analyze_vocabulary'] },
-  reading: { script: 'mcp-servers/reading/src/index.ts', tools: ['explain_reading', 'find_evidence'] },
-  writing: { script: 'mcp-servers/writing/src/index.ts', tools: ['analyze_writing', 'suggest_revision'] },
+  vocabulary: { script: 'mcp-servers/vocabulary/src/index.ts', tools: ['lookup_word', 'analyze_vocabulary', 'generate_vocab_practice'] },
+  reading: { script: 'mcp-servers/reading/src/index.ts', tools: ['explain_reading', 'find_evidence', 'create_questions'] },
+  writing: { script: 'mcp-servers/writing/src/index.ts', tools: ['analyze_writing', 'suggest_revision', 'score_rubric'] },
   assessment: { script: 'mcp-servers/assessment/src/index.ts', tools: ['create_assessment', 'validate_answer', 'record_attempt'] },
-  citation: { script: 'mcp-servers/citation/src/index.ts', tools: ['validate_citation', 'build_evidence_bundle'] }
+  citation: { script: 'mcp-servers/citation/src/index.ts', tools: ['validate_citation', 'build_evidence_bundle', 'format_citation'] }
 } as const;
 
 type Capability = keyof typeof capabilityConfig;
