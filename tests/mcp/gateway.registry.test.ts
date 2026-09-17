@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { capabilityConfig } from '../../mcp-gateway/src/index.js';
 
 const expectedTools = {
@@ -11,6 +13,8 @@ const expectedTools = {
   assessment: ['create_assessment', 'validate_answer', 'record_attempt'],
   citation: ['validate_citation', 'build_evidence_bundle', 'format_citation']
 } as const;
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 describe('MCP gateway capability registry', () => {
   it('exposes every approved capability', () => {
@@ -37,7 +41,7 @@ describe('MCP gateway capability registry', () => {
 
   it('points every capability to an existing MCP server entry point', () => {
     for (const config of Object.values(capabilityConfig)) {
-      expect(existsSync(config.script)).toBe(true);
+      expect(existsSync(resolve(repositoryRoot, config.script))).toBe(true);
     }
   });
 });
