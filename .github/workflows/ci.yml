@@ -60,3 +60,5 @@ jobs:
           grep -q 'Dr. Mudasir Rahman' docs/join.html
           grep -q 'Drmudasirrahman' docs/join.html
           echo "Modern English website smoke test passed."
+      - name: Validate learner HMI accessibility contract
+        run: node scripts/validate-learner-hmi.mjs
