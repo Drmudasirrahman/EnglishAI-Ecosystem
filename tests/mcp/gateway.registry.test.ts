@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { capabilityConfig } from '../../mcp-gateway/src/index.js';
+import { callCapability, capabilityConfig } from '../../mcp-gateway/src/index.js';
 
 const expectedTools = {
   'english-content': ['search_content', 'fetch_source'],
@@ -35,7 +35,7 @@ describe('MCP gateway capability registry', () => {
 
   it('uses source scripts under the MCP server tree', () => {
     for (const config of Object.values(capabilityConfig)) {
-      expect(config.script).toMatch(/^mcp-servers\/[^/]+\/src\/index\.ts$/);
+      expect(config.script).toMatch(/^mcp-servers\\/[^/]+\\/src\\/index\\.ts$/);
     }
   });
 
@@ -43,5 +43,11 @@ describe('MCP gateway capability registry', () => {
     for (const config of Object.values(capabilityConfig)) {
       expect(existsSync(resolve(repositoryRoot, config.script))).toBe(true);
     }
+  });
+
+  it('rejects tools that are not explicitly allow-listed', async () => {
+    await expect(
+      callCapability('grammar', 'not_a_real_tool', {})
+    ).rejects.toThrow("Tool 'not_a_real_tool' is not allowed for capability 'grammar'.");
   });
 });
