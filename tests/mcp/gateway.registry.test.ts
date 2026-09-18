@@ -35,7 +35,7 @@ describe('MCP gateway capability registry', () => {
 
   it('uses source scripts under the MCP server tree', () => {
     for (const config of Object.values(capabilityConfig)) {
-      expect(config.script).toMatch(/^mcp-servers\\/[^/]+\\/src\\/index\\.ts$/);
+      expect(config.script).toMatch(/^mcp-servers\/[^/]+\/src\/index\.ts$/);
     }
   });
 
