@@ -45,6 +45,11 @@ describe('MCP gateway capability registry', () => {
     }
   });
 
+  it('does not route multiple capabilities to the same server entry point', () => {
+    const scripts = Object.values(capabilityConfig).map((config) => config.script);
+    expect(new Set(scripts).size).toBe(scripts.length);
+  });
+
   it('rejects tools that are not explicitly allow-listed', async () => {
     await expect(
       callCapability('grammar', 'not_a_real_tool', {})
