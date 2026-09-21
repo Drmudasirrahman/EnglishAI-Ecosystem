@@ -20,16 +20,30 @@ const capabilityConfig = {
 
 type Capability = keyof typeof capabilityConfig;
 const clients = new Map<Capability, { client: Client; transport: StdioClientTransport }>();
+const pendingClients = new Map<Capability, Promise<Client>>();
 
 async function getClient(capability: Capability) {
   const existing = clients.get(capability);
   if (existing) return existing.client;
+
+  const pending = pendingClients.get(capability);
+  if (pending) return pending;
+
   const config = capabilityConfig[capability];
-  const client = new Client({ name: 'englishai-mcp-gateway', version: '1.0.0' });
-  const transport = new StdioClientTransport({ command: 'npx', args: ['tsx', config.script] });
-  await client.connect(transport);
-  clients.set(capability, { client, transport });
-  return client;
+  const connection = (async () => {
+    const client = new Client({ name: 'englishai-mcp-gateway', version: '1.0.0' });
+    const transport = new StdioClientTransport({ command: 'npx', args: ['tsx', config.script] });
+    try {
+      await client.connect(transport);
+      clients.set(capability, { client, transport });
+      return client;
+    } finally {
+      pendingClients.delete(capability);
+    }
+  })();
+
+  pendingClients.set(capability, connection);
+  return connection;
 }
 
 async function callCapability(capability: Capability, tool: string, args: Record<string, unknown>) {
