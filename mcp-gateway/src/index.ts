@@ -7,6 +7,7 @@ import * as z from 'zod/v4';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const ALLOWED_ORIGIN = process.env.WEB_ORIGIN ?? 'https://englishai-ecosystem-live.onrender.com';
+const SPECIALIST_CONNECT_TIMEOUT_MS = Number(process.env.SPECIALIST_CONNECT_TIMEOUT_MS ?? 10000);
 
 const capabilityConfig = {
   'english-content': { script: 'mcp-servers/english-content/src/index.ts', tools: ['search_content', 'fetch_source'] },
@@ -32,9 +33,21 @@ async function getClient(capability: Capability) {
   const config = capabilityConfig[capability];
   const connection = (async () => {
     const client = new Client({ name: 'englishai-mcp-gateway', version: '1.0.0' });
-    const transport = new StdioClientTransport({ command: 'npx', args: ['tsx', config.script] });
+    const transport = new StdioClientTransport({
+      command: process.execPath,
+      args: ['node_modules/tsx/dist/cli.mjs', config.script]
+    });
     try {
-      await client.connect(transport);
+      await Promise.race([
+        client.connect(transport),
+        new Promise<never>((_, reject) => {
+          const timer = setTimeout(
+            () => reject(new Error(`Timed out connecting to ${capability} specialist`)),
+            SPECIALIST_CONNECT_TIMEOUT_MS
+          );
+          timer.unref?.();
+        })
+      ]);
       clients.set(capability, { client, transport });
       return client;
     } finally {
