@@ -23,6 +23,24 @@ type Capability = keyof typeof capabilityConfig;
 const clients = new Map<Capability, { client: Client; transport: StdioClientTransport }>();
 const pendingClients = new Map<Capability, Promise<Client>>();
 
+async function connectWithTimeout(client: Client, transport: StdioClientTransport, capability: Capability) {
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    await Promise.race([
+      client.connect(transport),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () => reject(new Error(`Timed out connecting to ${capability} specialist`)),
+          SPECIALIST_CONNECT_TIMEOUT_MS
+        );
+        timer.unref?.();
+      })
+    ]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
 async function getClient(capability: Capability) {
   const existing = clients.get(capability);
   if (existing) return existing.client;
@@ -38,18 +56,12 @@ async function getClient(capability: Capability) {
       args: ['node_modules/tsx/dist/cli.mjs', config.script]
     });
     try {
-      await Promise.race([
-        client.connect(transport),
-        new Promise<never>((_, reject) => {
-          const timer = setTimeout(
-            () => reject(new Error(`Timed out connecting to ${capability} specialist`)),
-            SPECIALIST_CONNECT_TIMEOUT_MS
-          );
-          timer.unref?.();
-        })
-      ]);
+      await connectWithTimeout(client, transport, capability);
       clients.set(capability, { client, transport });
       return client;
+    } catch (error) {
+      await client.close().catch(() => undefined);
+      throw error;
     } finally {
       pendingClients.delete(capability);
     }
